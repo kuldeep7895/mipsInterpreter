@@ -1,19 +1,11 @@
-addi	$t1,$zero,0
-addi	$t1,$t1,9
+addi	$t0,$zero,1
+addi	$t1,$zero,10
+addi	$t3,$zero,1
 
-sw	$t1,56($zero)
+beq	$t1,$zero,11
 
-lw	$t2,56($zero)
+mul	$t3,$t3,$t0
+beq	$t0,$t1,11
+addi	$t0,$t0,1
+j	6
 
-beq	$t1,$t2,20
-
-addi	$t1,$t2,96
-
-addi	$t1,$t2,-96
-
-addi	$sp	,$sp,-4
-
-sw	$t1,($sp)
-
-lw	$t4, ($sp)
-addi	$sp,$sp,4

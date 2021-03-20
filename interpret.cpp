@@ -303,6 +303,9 @@ int main(){
 	}
 	
 	unordered_map<int, int> instrCount;
+	int countWords = countInstructions;
+	
+	
 	
 	int i = 0;
 	while(i<tokens.size()){
@@ -321,7 +324,7 @@ int main(){
 			
 			instrCount[i]++;
 			
-			cout<<"Line num "<<i+1<<endl;
+			cout<<"Before Line num "<<i+1<<endl;
 			for (int i = 0 ; i<32 ;i++){
 				cout<<registerNames[i]<<":   "<<reg[i]<<"       ";
 			}
@@ -459,6 +462,7 @@ int main(){
 					int reg2 = regNum(tokenVals[i][5]);
 					if(reg[reg2]==INT_MAX){
 						cout<<"No value in registered stored cnn;t retrieve"<<endl;
+						break;
 					}
 					else{
 						if((num+reg[reg2])%4!=0){
@@ -512,6 +516,7 @@ int main(){
 					int reg2 = regNum(tokenVals[i][4]);
 					if(reg[reg2]==INT_MAX){
 						cout<<"No value in registered stored cnn;t retrieve"<<endl;
+						break;
 					}
 					else{
 					
@@ -567,6 +572,7 @@ int main(){
 						}
 						
 						memory[loc] = reg[(reg1)];
+						countWords++;
 					}
 			}
 			// SW REG NUM
@@ -584,15 +590,18 @@ int main(){
 					
 					if(reg[reg1]==INT_MAX){
 						cout<<"Memory location is empty"<<endl;
+						break;
 					}
 					
 					
 						
 						if(loc<0||loc>=262144-countInstructions){
 							cout<<"Out of memory"<<endl;
+							break;
 						}
 					
 					memory[loc] = reg[(reg1)] ;
+					countWords++;
 					
 			}
 			// sw reg (reg)
@@ -603,6 +612,7 @@ int main(){
 					int reg2 = regNum(tokenVals[i][4]);
 					if(reg[reg2]==INT_MAX||reg[reg1]==INT_MAX){
 						cout<<"No value in registered stored cnn;t retrieve"<<endl;
+						break;
 					}
 					else{
 						if((reg[reg2])%4!=0){
@@ -615,11 +625,13 @@ int main(){
 						cout<<loc<<endl;
 						if(loc<0||loc>=262144-countInstructions){
 							cout<<"Out of memory"<<endl;
+							break;
 						}
 												
 						
 						
 						memory[loc] = reg[(reg1)];
+						countWords++;
 					}
 			}
 			// ADDI REG1 REG2 NUM
@@ -647,6 +659,7 @@ int main(){
 					int reg3 = regNum(tokenVals[i][5]) ;
 					if(reg[reg2]==INT_MAX||reg[reg3]==INT_MAX){
 						cout<<"No value in registered stored cnn;t retrieve"<<endl;
+						break;
 					}
 					else{
 					
@@ -659,10 +672,12 @@ int main(){
 						
 						if(memory[loc]==INT_MAX){
 							cout<<"Memory location is empty"<<endl;
+							break;
 						}
 						
 						if(loc<0||loc>=262144-countInstructions){
 							cout<<"Out of memory"<<endl;
+							break;
 						}
 						reg[reg1] = memory[loc];
 					}
@@ -675,6 +690,7 @@ int main(){
 					int reg3 = regNum(tokenVals[i][5]) ;
 					if(reg[reg2]==INT_MAX||reg[reg3]==INT_MAX){
 						cout<<"No value in registered stored cnn;t retrieve"<<endl;
+						break;
 					}
 					else{
 						if((reg[reg2]+reg[reg3])%4!=0){
@@ -688,13 +704,16 @@ int main(){
 						
 						if(loc<0||loc>=262144-countInstructions){
 							cout<<"Out of memory"<<endl;
+							break;
 						}
 						
 						if(reg[reg1]==INT_MAX){
 							cout<<"Memory location is empty"<<endl;
+							break;
 						}
 						
 						memory[loc] = reg[reg1];
+						countWords++;
 					}
 			}
 				
@@ -703,12 +722,15 @@ int main(){
 		i++;
 	}
 	
+	cout<<endl;
 	
-	cout<<"Line num "<<i+1<<endl;
+	cout<<"Result after Last instruction succesfully executed"<<endl;
 		for (int i = 0 ; i<32 ;i++){
 		cout<<registerNames[i]<<":   "<<reg[i]<<"       ";
 	}
 			
+	cout<<endl<<endl;
+	cout<<"Words stored "<< countWords<<endl;
 	cout<<"Clock cycle count = "<< countClockCycle<<endl;
 	unordered_map<int, int>:: iterator p;
 	for (p = instrCount.begin(); p != instrCount.end(); p++){
