@@ -305,7 +305,7 @@ int main(){
 	unordered_map<int, int> instrCount;
 	int countWords = countInstructions;
 	
-	
+	vector<int> memUpdateLoc;
 	
 	int i = 0;
 	while(i<tokens.size()){
@@ -324,9 +324,12 @@ int main(){
 			
 			instrCount[i]++;
 			
-			cout<<"Before Line num "<<i+1<<endl;
+			cout<<"On Clock cycle num"<<countClockCycle<<" Before Line num "<<i+1<<endl;
 			for (int i = 0 ; i<32 ;i++){
-				cout<<registerNames[i]<<":   "<<reg[i]<<"       ";
+				std::stringstream stream;
+				stream << std::hex << reg[i];
+				std::string result( stream.str() );
+				cout<<registerNames[i]<<":   "<<result<<"       ";
 			}
 			// ADD 
 			cout<<endl<<endl;
@@ -570,9 +573,12 @@ int main(){
 							cout<<"Memory location is empty"<<endl;
 							break;
 						}
-						
+						if(memory[loc]==INT_MAX){
+							countWords++;
+							memUpdateLoc.push_back((num+reg[reg2]));
+						}
 						memory[loc] = reg[(reg1)];
-						countWords++;
+						
 					}
 			}
 			// SW REG NUM
@@ -599,9 +605,12 @@ int main(){
 							cout<<"Out of memory"<<endl;
 							break;
 						}
-					
+					if(memory[loc]==INT_MAX){
+						countWords++;
+						memUpdateLoc.push_back(num);
+					}
 					memory[loc] = reg[(reg1)] ;
-					countWords++;
+				
 					
 			}
 			// sw reg (reg)
@@ -629,9 +638,12 @@ int main(){
 						}
 												
 						
-						
+						if(memory[loc]==INT_MAX){
+							countWords++;
+							memUpdateLoc.push_back(reg[reg2]);
+						}
 						memory[loc] = reg[(reg1)];
-						countWords++;
+						
 					}
 			}
 			// ADDI REG1 REG2 NUM
@@ -711,9 +723,12 @@ int main(){
 							cout<<"Memory location is empty"<<endl;
 							break;
 						}
-						
+						if(memory[loc]==INT_MAX){
+							countWords++;
+							memUpdateLoc.push_back(reg[reg3]+reg[reg2]);
+						}
 						memory[loc] = reg[reg1];
-						countWords++;
+						
 					}
 			}
 				
@@ -725,13 +740,27 @@ int main(){
 	cout<<endl;
 	
 	cout<<"Result after Last instruction succesfully executed"<<endl;
-		for (int i = 0 ; i<32 ;i++){
-		cout<<registerNames[i]<<":   "<<reg[i]<<"       ";
+	for (int i = 0 ; i<32 ;i++){
+	
+		std::stringstream stream;
+		stream << std::hex << reg[i];
+		std::string result( stream.str() );
+		cout<<registerNames[i]<<":   "<<result<<"       ";	
 	}
 			
 	cout<<endl<<endl;
 	cout<<"Words stored "<< countWords<<endl;
 	cout<<"Clock cycle count = "<< countClockCycle<<endl;
+	cout<<"Final data values that are updated during execution:"<<endl;
+	for(int loc : memUpdateLoc){
+		std::stringstream stream;
+		stream << std::hex << memory[((loc)/4)-countInstructions];
+		std::string result( stream.str() );
+			
+		cout <<loc <<" to "<<loc+3<<": "<<result<< endl;		
+	} 
+  
+	
 	unordered_map<int, int>:: iterator p;
 	for (p = instrCount.begin(); p != instrCount.end(); p++){
         	cout << "Instruction at line number : " << (p->first +1)<< " was executed " << p->second << " times \n";
