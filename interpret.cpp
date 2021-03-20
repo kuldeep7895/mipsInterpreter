@@ -254,6 +254,10 @@ bool Parse(){
 
 int main(){
 
+	int ROW_ACCESS_DELAY = 10;
+	int COL_ACCESS_DELAY = 2;
+	int ROW_BUFFER = 0;
+	
 	int countClockCycle = 0;
 	for (int i = 0 ; i<32 ;i++){
 		reg[i] = INT_MAX;
@@ -262,6 +266,7 @@ int main(){
 
 	string line;
 	ifstream myfile ("example.asm");
+	
 	if (myfile.is_open()){
 		while ( getline (myfile,line) ){
 			//cout << line << '\n';
@@ -305,9 +310,13 @@ int main(){
 	unordered_map<int, int> instrCount;
 	int countWords = countInstructions;
 	
-	vector<int> memUpdateLoc;
+
 	
+	vector<int> memUpdateLoc;
+	vector<int> regUpdateLoc;
+	vector<int> curMemUpdateLoc;
 	int i = 0;
+	int prevClockCycle = 0;
 	while(i<tokens.size()){
 		
 		
@@ -320,19 +329,55 @@ int main(){
 		if(tokens[i].size()!=0){
 		
 			
-			countClockCycle++;
+			
 			
 			instrCount[i]++;
-			
-			cout<<"On Clock cycle num"<<countClockCycle<<" Before Line num "<<i+1<<endl;
-			for (int i = 0 ; i<32 ;i++){
-				std::stringstream stream;
-				stream << std::hex << reg[i];
-				std::string result( stream.str() );
-				cout<<registerNames[i]<<":   "<<result<<"       ";
+			if(countClockCycle!=prevClockCycle){
+				if(countClockCycle-prevClockCycle==1){
+					cout<<"cycle "<<countClockCycle<<" : ";
+					for (int i = 0 ; i<regUpdateLoc.size();i++){
+						std::stringstream stream;
+						stream << std::hex << reg[regUpdateLoc[i]];
+						std::string result( stream.str() );
+						cout<<registerNames[regUpdateLoc[i]]<<": "<<result<<" ";
+					}
+					
+					for(int loc : curMemUpdateLoc){
+						std::stringstream stream;
+						stream << std::hex << memory[((loc)/4)-countInstructions];
+						std::string result( stream.str() );
+							
+						cout <<loc <<" to "<<loc+3<<": "<<result<<"  ";		
+					}
+				}
+				else{
+					
+					cout<<"clock "<<prevClockCycle+2<<"-"<<countClockCycle<<" : ";
+					for (int i = 0 ; i<regUpdateLoc.size();i++){
+						std::stringstream stream;
+						stream << std::hex << reg[regUpdateLoc[i]];
+						std::string result( stream.str() );
+						cout<<registerNames[regUpdateLoc[i]]<<": "<<result<<" ";
+					}
+					
+					for(int loc : curMemUpdateLoc){
+						std::stringstream stream;
+						stream << std::hex << memory[((loc)/4)-countInstructions];
+						std::string result( stream.str() );
+							
+						cout <<loc <<" to "<<loc+3<<": "<<result<<"  ";		
+					}
+				
+				}
+				prevClockCycle = countClockCycle;
+				cout<<endl;
 			}
+			
+			
+			regUpdateLoc.clear();
+			curMemUpdateLoc.clear();
 			// ADD 
-			cout<<endl<<endl;
+			
 			if(tokens[i]==allTokens[1]){
 				int reg1 = regNum(tokenVals[i][1]);
 				int reg2 = regNum(tokenVals[i][3]);
@@ -343,6 +388,8 @@ int main(){
 					break;
 				}
 				else{
+					regUpdateLoc.push_back(reg1);
+					
 					reg[reg1] = reg[reg2]+reg[reg3];
 				}
 			}
@@ -357,6 +404,7 @@ int main(){
 					break;
 				}
 				else{
+					regUpdateLoc.push_back(reg1);
 					reg[reg1] = reg[reg2]-reg[reg3];
 				}
 			}
@@ -371,6 +419,7 @@ int main(){
 					break;
 				}
 				else{
+					regUpdateLoc.push_back(reg1);
 					reg[reg1] = reg[reg2]*reg[reg3];
 				}
 			}
@@ -436,6 +485,7 @@ int main(){
 					}else{
 						reg[reg1] = 0;
 					}
+					regUpdateLoc.push_back(reg1);
 				
 				}
 			}	
@@ -483,8 +533,22 @@ int main(){
 							cout<<"Out of memory"<<endl;
 							break;
 						}
+						int row = ((num+reg[reg2])/1024)+1;
+						cout<<"clock "<<countClockCycle+1<<" DRAM request issued"<<endl;
+						if(ROW_BUFFER==0){
+							ROW_BUFFER = row;
+							countClockCycle+=ROW_ACCESS_DELAY+COL_ACCESS_DELAY;
+						}else{
+							if(ROW_BUFFER==row){
+								countClockCycle+=COL_ACCESS_DELAY;
+							}else{
+								ROW_BUFFER = row;
+								countClockCycle+=(ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY;
+							}
+						}
 						
 						reg[reg1] = memory[loc];
+						regUpdateLoc.push_back(reg1);
 					}
 			}
 			
@@ -508,7 +572,23 @@ int main(){
 							cout<<"Out of memory"<<endl;
 							break;
 					}
+					
+					int row = ((num)/1024)+1;
+					cout<<"clock "<<countClockCycle+1<<" DRAM request issued"<<endl;
+					if(ROW_BUFFER==0){
+							ROW_BUFFER = row;
+							countClockCycle+=ROW_ACCESS_DELAY+COL_ACCESS_DELAY;
+						}else{
+							if(ROW_BUFFER==row){
+								countClockCycle+=COL_ACCESS_DELAY;
+							}else{
+								ROW_BUFFER = row;
+								countClockCycle+=(ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY;
+						}
+					}
+					
 					reg[reg1] = memory[loc];
+					regUpdateLoc.push_back(reg1);
 					
 			}
 			
@@ -541,7 +621,23 @@ int main(){
 							break;
 						}
 						
+						
+						int row = ((reg[reg2])/1024)+1;
+						cout<<"clock "<<countClockCycle+1<<" DRAM request issued"<<endl;
+						if(ROW_BUFFER==0){
+								ROW_BUFFER = row;
+								countClockCycle+=ROW_ACCESS_DELAY+COL_ACCESS_DELAY;
+							}else{
+								if(ROW_BUFFER==row){
+									countClockCycle+=COL_ACCESS_DELAY;
+								}else{
+									ROW_BUFFER = row;
+									countClockCycle+=(ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY;
+							}
+						}
+						
 						reg[reg1] = memory[loc];
+						regUpdateLoc.push_back(reg1);
 					}
 			}
 			// SW REG NUM ( REG )
@@ -575,9 +671,29 @@ int main(){
 						}
 						if(memory[loc]==INT_MAX){
 							countWords++;
-							memUpdateLoc.push_back((num+reg[reg2]));
+							memUpdateLoc.push_back(num+reg[reg2]);
+							curMemUpdateLoc.push_back(num+reg[reg2]);
 						}
+						
+						
+						
+						int row = ((num+reg[reg2])/1024)+1;
+						cout<<"clock "<<countClockCycle+1<<" DRAM request issued"<<endl;
+						if(ROW_BUFFER==0){
+								ROW_BUFFER = row;
+								countClockCycle+=ROW_ACCESS_DELAY+COL_ACCESS_DELAY;
+							}else{
+								if(ROW_BUFFER==row){
+									countClockCycle+=COL_ACCESS_DELAY;
+								}else{
+									ROW_BUFFER = row;
+									countClockCycle+=(ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY;
+							}
+						}
+						
+						
 						memory[loc] = reg[(reg1)];
+						
 						
 					}
 			}
@@ -608,7 +724,24 @@ int main(){
 					if(memory[loc]==INT_MAX){
 						countWords++;
 						memUpdateLoc.push_back(num);
+						curMemUpdateLoc.push_back(num);
 					}
+					
+					int row = ((num)/1024)+1;
+					cout<<"clock "<<countClockCycle+1<<" DRAM request issued"<<endl;
+					if(ROW_BUFFER==0){
+								ROW_BUFFER = row;
+								countClockCycle+=ROW_ACCESS_DELAY+COL_ACCESS_DELAY;
+							}else{
+								if(ROW_BUFFER==row){
+									countClockCycle+=COL_ACCESS_DELAY;
+								}else{
+									ROW_BUFFER = row;
+								countClockCycle+=(ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY;
+						}
+					}
+					
+					
 					memory[loc] = reg[(reg1)] ;
 				
 					
@@ -641,7 +774,24 @@ int main(){
 						if(memory[loc]==INT_MAX){
 							countWords++;
 							memUpdateLoc.push_back(reg[reg2]);
+							curMemUpdateLoc.push_back(reg[reg2]);
 						}
+						
+						
+						int row = ((reg[reg2])/1024)+1;
+						cout<<"clock "<<countClockCycle+1<<" DRAM request issued"<<endl;
+						if(ROW_BUFFER==0){
+								ROW_BUFFER = row;
+								countClockCycle+=ROW_ACCESS_DELAY+COL_ACCESS_DELAY;
+							}else{
+								if(ROW_BUFFER==row){
+									countClockCycle+=COL_ACCESS_DELAY;
+								}else{
+									ROW_BUFFER = row;
+									countClockCycle+=(ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY;
+							}
+						}
+						
 						memory[loc] = reg[(reg1)];
 						
 					}
@@ -659,6 +809,7 @@ int main(){
 				}
 				else{
 					reg[reg1] = reg[reg2]+num;
+					regUpdateLoc.push_back(reg1);
 				}
 			}
 			
@@ -691,7 +842,25 @@ int main(){
 							cout<<"Out of memory"<<endl;
 							break;
 						}
+						
+						
+						int row = ((reg[reg3]+reg[reg2])/1024)+1;
+						cout<<"clock "<<countClockCycle+1<<" DRAM request issued"<<endl;
+						if(ROW_BUFFER==0){
+								ROW_BUFFER = row;
+								countClockCycle+=ROW_ACCESS_DELAY+COL_ACCESS_DELAY;
+							}else{
+								if(ROW_BUFFER==row){
+									countClockCycle+=COL_ACCESS_DELAY;
+								}else{
+									ROW_BUFFER = row;
+									countClockCycle+=(ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY;
+							}
+						}
+						
+						
 						reg[reg1] = memory[loc];
+						regUpdateLoc.push_back(reg1);
 					}
 			}
 			// SW  REG REG (REG)
@@ -726,29 +895,93 @@ int main(){
 						if(memory[loc]==INT_MAX){
 							countWords++;
 							memUpdateLoc.push_back(reg[reg3]+reg[reg2]);
+							curMemUpdateLoc.push_back(reg[reg3]+reg[reg2]);
 						}
+						
+						
+						int row = ((reg[reg3]+reg[reg2])/1024)+1;
+						cout<<"clock "<<countClockCycle+1<<" DRAM request issued"<<endl;
+						if(ROW_BUFFER==0){
+								ROW_BUFFER = row;
+								countClockCycle+=ROW_ACCESS_DELAY+COL_ACCESS_DELAY;
+							}else{
+								if(ROW_BUFFER==row){
+									countClockCycle+=COL_ACCESS_DELAY;
+								}else{
+									ROW_BUFFER = row;
+									countClockCycle+=(ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY;
+							}
+						}
+						
+						
 						memory[loc] = reg[reg1];
 						
 					}
 			}
-				
+			countClockCycle++;
 		}
 		//cout<<i<<endl;
 		i++;
+		
 	}
+
 	
-	cout<<endl;
+//	cout<<"Result after Last instruction succesfully executed"<<endl;
+//	for (int i = 0 ; i<32 ;i++){
+//	
+//		std::stringstream stream;
+//		stream << std::hex << reg[i];
+//		std::string result( stream.str() );
+//		cout<<registerNames[i]<<":   "<<result<<"       ";	
+//	}
+//			
+//	cout<<endl<<endl;
 	
-	cout<<"Result after Last instruction succesfully executed"<<endl;
-	for (int i = 0 ; i<32 ;i++){
 	
-		std::stringstream stream;
-		stream << std::hex << reg[i];
-		std::string result( stream.str() );
-		cout<<registerNames[i]<<":   "<<result<<"       ";	
-	}
+	
+				if(countClockCycle!=prevClockCycle){
+				if(countClockCycle-prevClockCycle==1){
+					cout<<"cycle "<<countClockCycle<<" : ";
+					for (int i = 0 ; i<regUpdateLoc.size();i++){
+						std::stringstream stream;
+						stream << std::hex << reg[regUpdateLoc[i]];
+						std::string result( stream.str() );
+						cout<<registerNames[regUpdateLoc[i]]<<": "<<result<<" ";
+					}
+					
+					for(int loc : curMemUpdateLoc){
+						std::stringstream stream;
+						stream << std::hex << memory[((loc)/4)-countInstructions];
+						std::string result( stream.str() );
+							
+						cout <<loc <<" to "<<loc+3<<": "<<result<<"  ";		
+					}
+				}
+				else{
+					
+					cout<<"clock "<<prevClockCycle+2<<"-"<<countClockCycle<<" : ";
+					for (int i = 0 ; i<regUpdateLoc.size();i++){
+						std::stringstream stream;
+						stream << std::hex << reg[regUpdateLoc[i]];
+						std::string result( stream.str() );
+						cout<<registerNames[regUpdateLoc[i]]<<": "<<result<<" ";
+					}
+					
+					for(int loc : curMemUpdateLoc){
+						std::stringstream stream;
+						stream << std::hex << memory[((loc)/4)-countInstructions];
+						std::string result( stream.str() );
+							
+						cout <<loc <<" to "<<loc+3<<": "<<result<<"  ";		
+					}
+				
+				}
+				prevClockCycle = countClockCycle;
+				cout<<endl;
+			}
 			
-	cout<<endl<<endl;
+	
+	
 	cout<<"Words stored "<< countWords<<endl;
 	cout<<"Clock cycle count = "<< countClockCycle<<endl;
 	cout<<"Final data values that are updated during execution:"<<endl;
