@@ -326,6 +326,8 @@ int main(){
 	int dependentReg = -1;
 	int parallelClock = -1;
 	
+	int countRowBufferUpdate = 0;
+	
 	while(i<tokens.size()){
 
 		
@@ -673,14 +675,28 @@ int main(){
 						cout<<"clock "<<countClockCycle+1<<" DRAM request issued"<<endl;
 						parallelClock = countClockCycle;
 						if(ROW_BUFFER==0){
+							cout<<"clock "<<countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+1<<" activated row "<<row<<endl;
+							cout<<"clock "<<ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+COL_ACCESS_DELAY+1<<" copied data row buffer to register "<<registerNames[reg1]<<endl;
+							
 							ROW_BUFFER = row;
+							countRowBufferUpdate+=1;
 							countClockCycle+=ROW_ACCESS_DELAY+COL_ACCESS_DELAY+1;
+							
 							clockRem = ROW_ACCESS_DELAY+COL_ACCESS_DELAY;
 						}else{
 							if(ROW_BUFFER==row){
+								
+								cout<<"clock "<<countClockCycle+2<<" to " <<countClockCycle+COL_ACCESS_DELAY+1<<" copied data row buffer to register "<<registerNames[reg1]<<endl;
+								
 								countClockCycle+=COL_ACCESS_DELAY+1;
+								
 								clockRem = COL_ACCESS_DELAY;
 							}else{
+								cout<<"clock "<<countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+1<<" transferred buffer row to row "<<ROW_BUFFER<<endl;
+											
+								cout<<"clock "<<ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<2*ROW_ACCESS_DELAY+countClockCycle+1<<" updated row buffer with row "<<row<<endl;
+								cout<<"clock "<<2*ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<2*ROW_ACCESS_DELAY+countClockCycle+COL_ACCESS_DELAY+1<<" row buffer to register "<<row<<endl;
+								countRowBufferUpdate+=1;
 								ROW_BUFFER = row;
 								countClockCycle+=(ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY+1;
 								clockRem = (ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY;
@@ -734,15 +750,26 @@ int main(){
 					cout<<"clock "<<countClockCycle+1<<" DRAM request issued"<<endl;
 					parallelClock = countClockCycle;
 					if(ROW_BUFFER==0){
+							cout<<"clock "<<countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+1<<" activated row "<<row<<endl;
+							cout<<"clock "<<ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+COL_ACCESS_DELAY+1<<" copied data row buffer to register "<<registerNames[reg1]<<endl;
+							countRowBufferUpdate+=1;
 							ROW_BUFFER = row;
 							countClockCycle+=ROW_ACCESS_DELAY+COL_ACCESS_DELAY+1;
 							clockRem = (ROW_ACCESS_DELAY)+COL_ACCESS_DELAY;
 						}else{
 							if(ROW_BUFFER==row){
+								
+								cout<<"clock "<<countClockCycle+2<<" to " <<countClockCycle+COL_ACCESS_DELAY+1<<" copied data row buffer to register "<<row<<endl;
+							
 								countClockCycle+=COL_ACCESS_DELAY+1;
 								clockRem = COL_ACCESS_DELAY;
 							}else{
+								cout<<"clock "<<countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+1<<" transferred buffer row to row "<<ROW_BUFFER<<endl;
+											
+								cout<<"clock "<<ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<2*ROW_ACCESS_DELAY+countClockCycle+1<<" updated row buffer with row "<<row<<endl;
+								cout<<"clock "<<2*ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<2*ROW_ACCESS_DELAY+countClockCycle+COL_ACCESS_DELAY+1<<" copied data row buffer to register "<<row<<endl;
 								ROW_BUFFER = row;
+								countRowBufferUpdate+=1;
 								countClockCycle+=(ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY+1;
 								clockRem = (ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY;
 						}
@@ -804,14 +831,25 @@ int main(){
 						cout<<"clock "<<countClockCycle+1<<" DRAM request issued"<<endl;
 						parallelClock = countClockCycle;
 						if(ROW_BUFFER==0){
+								countRowBufferUpdate+=1;
+								cout<<"clock "<<countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+1<<" activated row "<<row<<endl;
+								cout<<"clock "<<ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+COL_ACCESS_DELAY+1<<" copied data from row buffer to register "<<row<<endl;
 								ROW_BUFFER = row;
 								countClockCycle+=ROW_ACCESS_DELAY+COL_ACCESS_DELAY+1;
 								clockRem = (ROW_ACCESS_DELAY)+COL_ACCESS_DELAY;
 							}else{
 								if(ROW_BUFFER==row){
+									cout<<"clock "<<countClockCycle+2<<" to " <<countClockCycle+COL_ACCESS_DELAY+1<<" copied data from row buffer to register  "<<row<<endl;
+							
 									countClockCycle+=COL_ACCESS_DELAY+1;
 									clockRem = COL_ACCESS_DELAY;
 								}else{
+									countRowBufferUpdate+=1;
+									cout<<"clock "<<countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+1<<" transferred buffer row to row "<<ROW_BUFFER<<endl;
+											
+								cout<<"clock "<<ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<2*ROW_ACCESS_DELAY+countClockCycle+1<<" updated row buffer with row "<<row<<endl;
+								cout<<"clock "<<2*ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<2*ROW_ACCESS_DELAY+countClockCycle+COL_ACCESS_DELAY+1<<" copied data row buffer to register "<<registerNames[reg1]<<endl;
+								
 									ROW_BUFFER = row;
 									countClockCycle+=(ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY+1;
 									clockRem = (ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY;
@@ -879,14 +917,24 @@ int main(){
 						cout<<"clock "<<countClockCycle+1<<" DRAM request issued"<<endl;
 						parallelClock = countClockCycle;
 						if(ROW_BUFFER==0){
+								countRowBufferUpdate+=2;
+								cout<<"clock "<<countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+1<<" activated row "<<row<<endl;
+								cout<<"clock "<<ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+COL_ACCESS_DELAY+1<<" copied data from register to row buffer "<<row<<endl;
 								ROW_BUFFER = row;
 								countClockCycle+=ROW_ACCESS_DELAY+COL_ACCESS_DELAY+1;
 								clockRem = (ROW_ACCESS_DELAY)+COL_ACCESS_DELAY;
 							}else{
 								if(ROW_BUFFER==row){
+								countRowBufferUpdate+=1;
+								cout<<"clock "<<countClockCycle+2<<" to " <<countClockCycle+COL_ACCESS_DELAY+1<<" copied data from register to row buffer "<<row<<endl;
 									countClockCycle+=COL_ACCESS_DELAY+1;
 									clockRem = COL_ACCESS_DELAY;
 								}else{
+									countRowBufferUpdate+=2;
+									cout<<"clock "<<countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+1<<" Copied row buffer back to row "<<ROW_BUFFER<<endl;
+											
+								cout<<"clock "<<ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<2*ROW_ACCESS_DELAY+countClockCycle+1<<" updated row buffer with row "<<row<<endl;
+								cout<<"clock "<<2*ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<2*ROW_ACCESS_DELAY+countClockCycle+COL_ACCESS_DELAY+1<<" copied data from register to row  buffer "<<row<<endl;
 									ROW_BUFFER = row;
 									countClockCycle+=(ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY+1;
 									clockRem = (ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY;
@@ -950,14 +998,24 @@ int main(){
 					cout<<"clock "<<countClockCycle+1<<" DRAM request issued"<<endl;
 					parallelClock = countClockCycle;
 					if(ROW_BUFFER==0){
+								countRowBufferUpdate+=2;
+								cout<<"clock "<<countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+1<<" activated row "<<row<<endl;
+								cout<<"clock "<<ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+COL_ACCESS_DELAY+1<<" copied data from register to row buffer "<<row<<endl;
 								ROW_BUFFER = row;
 								countClockCycle+=ROW_ACCESS_DELAY+COL_ACCESS_DELAY+1;
 								clockRem = (ROW_ACCESS_DELAY)+COL_ACCESS_DELAY;
 							}else{
 								if(ROW_BUFFER==row){
+									countRowBufferUpdate+=1;
+								cout<<"clock "<<countClockCycle+2<<" to " <<countClockCycle+COL_ACCESS_DELAY+1<<" copied data from register to row buffer "<<row<<endl;
 									countClockCycle+=COL_ACCESS_DELAY+1;
 									clockRem = COL_ACCESS_DELAY;
 								}else{
+									countRowBufferUpdate+=2;
+														cout<<"clock "<<countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+1<<" Copied row buffer back to row "<<ROW_BUFFER<<endl;
+											
+								cout<<"clock "<<ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<2*ROW_ACCESS_DELAY+countClockCycle+1<<" updated row buffer with row "<<row<<endl;
+								cout<<"clock "<<2*ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<2*ROW_ACCESS_DELAY+countClockCycle+COL_ACCESS_DELAY+1<<" copied data from register to row  buffer "<<row<<endl;
 									ROW_BUFFER = row;
 								countClockCycle+=(ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY+1;
 								clockRem = (ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY;
@@ -1020,14 +1078,24 @@ int main(){
 						cout<<"clock "<<countClockCycle+1<<" DRAM request issued"<<endl;
 						parallelClock = countClockCycle;
 						if(ROW_BUFFER==0){
+								countRowBufferUpdate+=2;
+								cout<<"clock "<<countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+1<<" activated row "<<row<<endl;
+								cout<<"clock "<<ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+COL_ACCESS_DELAY+1<<" copied data from register to row buffer "<<row<<endl;
 								ROW_BUFFER = row;
 								countClockCycle+=ROW_ACCESS_DELAY+COL_ACCESS_DELAY+1;
 								clockRem = (ROW_ACCESS_DELAY)+COL_ACCESS_DELAY;
 							}else{
 								if(ROW_BUFFER==row){
+								countRowBufferUpdate+=1;
+								cout<<"clock "<<countClockCycle+2<<" to " <<countClockCycle+COL_ACCESS_DELAY+1<<" copied data from register to row buffer "<<row<<endl;
 									countClockCycle+=COL_ACCESS_DELAY+1;
 									clockRem = COL_ACCESS_DELAY;
 								}else{
+									countRowBufferUpdate+=2;
+															cout<<"clock "<<countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+1<<" Copied row buffer back to row "<<ROW_BUFFER<<endl;
+											
+								cout<<"clock "<<ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<2*ROW_ACCESS_DELAY+countClockCycle+1<<" updated row buffer with row "<<row<<endl;
+								cout<<"clock "<<2*ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<2*ROW_ACCESS_DELAY+countClockCycle+COL_ACCESS_DELAY+1<<" copied data from register to row  buffer "<<row<<endl;
 									ROW_BUFFER = row;
 									countClockCycle+=(ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY+1;
 									clockRem = (ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY;
@@ -1119,14 +1187,21 @@ int main(){
 						cout<<"clock "<<countClockCycle+1<<" DRAM request issued"<<endl;
 						parallelClock = countClockCycle;
 						if(ROW_BUFFER==0){
+								countRowBufferUpdate+=1;
 								ROW_BUFFER = row;
 								countClockCycle+=ROW_ACCESS_DELAY+COL_ACCESS_DELAY+1;
 								clockRem = (ROW_ACCESS_DELAY)+COL_ACCESS_DELAY;
 							}else{
 								if(ROW_BUFFER==row){
+								cout<<"clock "<<countClockCycle+2<<" to " <<countClockCycle+COL_ACCESS_DELAY+1<<" copied data row buffer to register "<<registerNames[reg1]<<endl;
 									countClockCycle+=COL_ACCESS_DELAY+1;
 									clockRem = COL_ACCESS_DELAY;
 								}else{
+									countRowBufferUpdate+=1;
+									cout<<"clock "<<countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+1<<" transferred buffer row to row "<<ROW_BUFFER<<endl;
+											
+								cout<<"clock "<<ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<2*ROW_ACCESS_DELAY+countClockCycle+1<<" updated row buffer with row "<<row<<endl;
+								cout<<"clock "<<2*ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<2*ROW_ACCESS_DELAY+countClockCycle+COL_ACCESS_DELAY+1<<" copied data from row  buffer to register "<<row<<endl;
 									ROW_BUFFER = row;
 									countClockCycle+=(ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY+1;
 									clockRem = (ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY;
@@ -1195,14 +1270,24 @@ int main(){
 						cout<<"clock "<<countClockCycle+1<<" DRAM request issued"<<endl;
 						parallelClock = countClockCycle;
 						if(ROW_BUFFER==0){
+								countRowBufferUpdate+=2;
+								cout<<"clock "<<countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+1<<" activated row "<<row<<endl;
+							cout<<"clock "<<ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+COL_ACCESS_DELAY+1<<" copied data from register to row buffer "<<row<<endl;
 								ROW_BUFFER = row;
 								countClockCycle+=ROW_ACCESS_DELAY+COL_ACCESS_DELAY+1;
 								clockRem = (ROW_ACCESS_DELAY)+COL_ACCESS_DELAY;
 							}else{
 								if(ROW_BUFFER==row){
+									countRowBufferUpdate+=1;
+									cout<<"clock "<<countClockCycle+2<<" to " <<countClockCycle+COL_ACCESS_DELAY+1<<" copied data from register to row buffer "<<row<<endl;
 									countClockCycle+=COL_ACCESS_DELAY+1;
 									clockRem = COL_ACCESS_DELAY;
 								}else{
+									countRowBufferUpdate+=2;
+											cout<<"clock "<<countClockCycle+2<<" to " <<ROW_ACCESS_DELAY+countClockCycle+1<<" Copied row buffer back to row "<<ROW_BUFFER<<endl;
+											
+								cout<<"clock "<<ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<2*ROW_ACCESS_DELAY+countClockCycle+1<<" updated row buffer with row "<<row<<endl;
+								cout<<"clock "<<2*ROW_ACCESS_DELAY+countClockCycle+2<<" to " <<2*ROW_ACCESS_DELAY+countClockCycle+COL_ACCESS_DELAY+1<<" copied data from register to row  buffer "<<row<<endl;
 									ROW_BUFFER = row;
 									countClockCycle+=(ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY+1;
 									clockRem = (ROW_ACCESS_DELAY*2)+COL_ACCESS_DELAY;
@@ -1277,6 +1362,7 @@ int main(){
 	
 	cout<<"Words stored "<< countWords<<endl;
 	cout<<"Clock cycle count = "<< countClockCycle<<endl;
+	cout<<"Number of row buffer updates ="<<countRowBufferUpdate<<endl;
 	cout<<"Final data values that are updated during execution:"<<endl;
 	for(int loc : memUpdateLoc){
 		std::stringstream stream;
