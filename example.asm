@@ -3,9 +3,27 @@
 	addi $t0, $zero, 1
 	addi $t1, $zero, 2
 	sw $t0, 0($s0)
+	addi	$t5,$zero,89
+	addi	$t5,$zero,89
+	addi	$t5,$zero,89
+	addi	$t5,$zero,89
+	lw	$t5,0($s0)
+	addi	$t6,$zero,999
+	addi	$t5,$zero,89
+	addi	$t5,$zero,89
+	addi	$t5,$zero,89
+	addi	$t5,$zero,89
+	addi	$t5,$zero,89
+	addi	$t5,$zero,89
+	addi	$t5,$zero,89
+addi	$t5,$zero,89
+addi	$t5,$zero,89
 	sw $t1, 0($s1)
 	
+	
+	
 	lw $t2, 0($s0)
+	
 	lw $t3, 0($s1)
 	
 	add $t3, $t3, $t2

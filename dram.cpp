@@ -334,7 +334,7 @@ int main(){
 			instrCount[i]++;
 			if(countClockCycle!=prevClockCycle){
 				if(countClockCycle-prevClockCycle==1){
-					cout<<"cycle "<<countClockCycle<<" : ";
+					cout<<"clock "<<countClockCycle<<" : ";
 					for (int i = 0 ; i<regUpdateLoc.size();i++){
 						std::stringstream stream;
 						stream << std::hex << reg[regUpdateLoc[i]];
@@ -941,7 +941,7 @@ int main(){
 	
 				if(countClockCycle!=prevClockCycle){
 				if(countClockCycle-prevClockCycle==1){
-					cout<<"cycle "<<countClockCycle<<" : ";
+					cout<<"clock "<<countClockCycle<<" : ";
 					for (int i = 0 ; i<regUpdateLoc.size();i++){
 						std::stringstream stream;
 						stream << std::hex << reg[regUpdateLoc[i]];
